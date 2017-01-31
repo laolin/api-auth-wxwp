@@ -10,12 +10,15 @@ api_g("DBPASS",'test_passwd');
 api_g("WX_APPID",'');
 api_g("WX_APPSEC",'');
 
-//api_usr_user 
-//api_usr_token
-//api_usr_bind
-//api_usr_wx
-api_g("usr-table-prefix",'api_usr_');
-api_g("usr-salt",['version'=>1,'salt'=>'api_salt-laolin@&*']);
+
+//api_tbl_log 访问记录
+//api_tbl_tokenbucket 令牌桶，用于控制访问量
+//api_tbl_user 
+//api_tbl_token
+//api_tbl_bind
+//api_tbl_wxuser
+api_g("api-table-prefix",'api_tbl_');
+api_g("usr-salt",['version'=>'ab','salt'=>'api_salt-laolin@&*']); //目前 version 长度 要求==2
 
 
 //开头要有'/'，结束不能有'/'，从 index.php 所在路径相对计算
