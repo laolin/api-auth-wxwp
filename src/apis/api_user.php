@@ -9,6 +9,17 @@ class class_user{
     return $res;
   }
   
+  //test
+  public static function test( ) {
+    $uid=API::INP('uid');
+    $tokenid=API::INP('tokenid');
+    $timestamp=API::INP('timestamp');
+    $sign=API::INP('api_signature');
+    
+    $r=self::_signVerify($uid,$tokenid,$timestamp,$sign);
+    return API::data($r);
+  }
+  
   //返回用于加密密码的 salt str
   public static function salt( $para1,$para2) {
     return API::data(api_g("usr-salt"));
@@ -124,7 +135,7 @@ class class_user{
     $tokenid=1;//目前都是1，即每用户只有一个token，以后允许多tok
     $tok=self::_tokGen($uid,$tokenid);
     self::_tokSave($uid,$tokenid,$tok);
-    return API::data(['uid'=>$uid,'uname'=>$p_right['uname'],'token'=>$tok]);
+    return API::data(['uid'=>$uid,'uname'=>$p_right['uname'],'token'=>$tok, 'tokenid'=>$tokenid]);
   }
 
     
@@ -205,12 +216,12 @@ class class_user{
     
     $day=0+date('ymd',time() );
     
-    return "$salt_ver-$uid-$tokenid-$day-$str";
+    return "$tokenid-$salt_ver-$uid-$day-$str";
   }
   static  function _tokGet($uid,$tokenid) {
     $db=API::db();
     $prefix=api_g("api-table-prefix");
-    $rr=$db->get($prefix.'token',['token'],
+    $rr=$db->get($prefix.'token',['id','token'],
       ['and'=>['uid'=>$uid,'tokenid'=>$tokenid ],
           "LIMIT" => 1]  );
 
@@ -228,16 +239,40 @@ class class_user{
     $rr=$db->get($prefix.'token',['id'],
       ['and'=>['uid'=>$uid,'tokenid'=>$tokenid ]]  );
 
+    $desc=$_SERVER['REMOTE_ADDR'].'@@'.$_SERVER['HTTP_USER_AGENT'];
     if(isset($rr['id']) && $rr['id']) {
       $id=$rr['id'];
       $r=$db->update($prefix.'token',
-        [ 'uid'=>$uid ,'tokenid'=>$tokenid , 'token'=>$tok , 'ip'=>$ip ] ,
+        [ 'uid'=>$uid ,'tokenid'=>$tokenid , 'token'=>$tok , 'ip'=>$ip, 'tokenDesc'=>$desc ] ,
         [ 'AND'=>['id'=>$id],
           "LIMIT" => 1]);
     } else {
       $r=$db->insert($prefix.'token',
-        [ 'uid'=>$uid ,'tokenid'=>$tokenid , 'token'=>$tok , 'ip'=>$ip ] );
+        [ 'uid'=>$uid ,'tokenid'=>$tokenid , 'token'=>$tok , 'ip'=>$ip, 'tokenDesc'=>$desc ] );
     }
     return $r;
   }
+  
+  /**
+   *  验证签名
+   *  sign = hex_md5(api+call+uid+token+timestamp)
+   *  其中 token 客户端不用传给服务器，只需要传tokenid
+   *  服务器
+   */
+  
+  static  function _signVerify($uid,$tokenid,$timestamp,$sign) {
+    api_g('dbg-_signVerify',"$uid,$tokenid,$timestamp,$sign");
+    if( ! $uid || ! $tokenid || ! $timestamp || ! $sign )return 10;
+    $token=self::_tokGet($uid,$tokenid);
+    if(!$token)return 22;
+
+    $apipara=explode('/',api_g('api'));
+    $api=$apipara[1];
+    $call=$apipara[2];
+    $fff=$api.$call.$uid.$token.$timestamp;
+    $sign_srv=md5($api.$call.$uid.$token.$timestamp);
+    api_g('dbg-$sign_srv=',"before: $fff,$token,md5: $sign_srv");
+    return $sign_srv == $sign;
+  }
+
 }
