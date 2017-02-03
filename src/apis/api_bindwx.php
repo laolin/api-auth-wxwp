@@ -165,7 +165,7 @@ class BINDWX{
     }
     api_g('$r_new',$r);
     
-    return $id;
+    return $uidBinded;
 
   }
 }
