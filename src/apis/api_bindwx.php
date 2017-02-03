@@ -66,7 +66,10 @@ class class_bindwx{
     
     
     //第二步客户端的 HTML5 页面的 URI 信息
-  $url="$urlObj[scheme]://$urlObj[host]:$urlObj[port]/$urlObj[path]?";
+    $url="$urlObj[scheme]://$urlObj[host]";
+    if($urlObj[port])
+      $url.=":$urlObj[port]";
+    $url.="$urlObj[path]?";
     if($urlObj['query'])
       $url.=$urlObj['query']."&";
     $url.="_ret_code=$code&_ret_app=".$ss[1];
