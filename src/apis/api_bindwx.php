@@ -102,13 +102,14 @@ class class_bindwx{
   public static function callback_auth( $para1, $para2 ) {
     $code=API::GET('code');
     $app=API::GET('app');
+    $clientId=API::GET('clientid');
     if(strlen($code)<10)return API::msg(1001,'Error auth code.');
-    return BINDWX::oauth($code,$app);
+    return BINDWX::oauth($code,$app,$clientId);
   }
   
 }
 class BINDWX{
-  static public function oauth($code,$app){
+  static public function oauth($code,$app,$clientId){
     //1，微信回传来的$code
     //$ret=[];
     
@@ -139,7 +140,7 @@ class BINDWX{
     unset($user_info['privilege']);//这个一般是空数组格式，不保存
     $uname='wx-'.substr($user_info['openid'],-8);
     $newUserId = self::user_save($user_info,$uname);
-    $tokenid=$app;
+    $tokenid=$app.'~'.$clientId;
     $newToken=USER::__ADMIN_addToken($newUserId,$tokenid);
     $newToken['uname']=$uname;
     $newToken['wxinfo']=$user_info;
