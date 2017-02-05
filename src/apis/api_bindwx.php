@@ -153,7 +153,12 @@ class BINDWX{
     
     $r_old=$db->get($prefix.'user_wx',
       ['id','uidBinded'],
-      ['and'=>['openid'=>$user_info['openid'] ] ]);
+      ['or'=>[
+        'openid'=>$user_info['openid'],
+        'unionid'=>$user_info['unionid'] ? $user_info['unionid'] : time()
+        //注，由于有时可能 unionid 是空的，故写个 time 以让此条件不成立。
+      ]]
+      );
     $uidBinded=0;
     if($r_old) {
       api_g('$r_old',$r_old);
