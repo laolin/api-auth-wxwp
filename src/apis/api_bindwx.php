@@ -96,7 +96,7 @@ class class_bindwx{
     */
     $url .= "?_ret_code=$code&_ret_app=".$ss[1]."&pageTo=$pageTo";
     header('Location: ' .$url);
-    die();
+    return false;//die();
     //return API::data([$url,$code,$state,$urlObj]);
  }
   
