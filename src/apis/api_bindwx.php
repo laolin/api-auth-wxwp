@@ -70,6 +70,7 @@ class class_bindwx{
       explode('callback_xdom',$_SERVER['REQUEST_URI'])[0];
     
     $url=base64_decode($para1);//回调的 APP （客户端网页）地址
+    $pageTo=base64_decode($para2);//（客户端网页）登录成功后再次重定向的地址
     $urlObj=parse_url($url);
     if(!isset($urlObj['scheme'])||!isset($urlObj['host'])||!isset($urlObj['path'])) {
       return API::data(['invalid URL:',$url,$code,$state]);
@@ -93,7 +94,7 @@ class class_bindwx{
     if(isset($urlObj['fragment']))
       $url.="#$urlObj[fragment]";
     */
-    $url .= "?_ret_code=$code&_ret_app=".$ss[1];
+    $url .= "?_ret_code=$code&_ret_app=".$ss[1]."&pageTo=$pageTo";
     header('Location: ' .$url);
     die();
     //return API::data([$url,$code,$state,$urlObj]);
