@@ -50,7 +50,8 @@ class class_wx{
     api_g('___fname',$res['fname']);
     if($res['type']=="text/plain") {
       if(strpos($res['file'],'errcode')) {
-        return API::data(json_decode($res['file'],true));//出错
+        $e=json_decode($res['file'],true);
+        return API::msg($e['errcode'],'Wx media get err:'.$e['errmsg']);//出错
       }
     }
     $pweb=api_g('path-web');
