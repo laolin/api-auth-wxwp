@@ -21,6 +21,9 @@ class class_wx{
    *  /wx/mediaget API 和 Api-core 中的 /file/get API 接近。 待后面适当合并。
    */
   public static function mediaget( ) {
+    if( ! USER::userVerify() ) {
+      return API::msg(2001,'Error verify token.');
+    }
     $tok=self::__accessToken();
     if(API::is_error($tok)) {
       return $tok;
