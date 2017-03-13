@@ -12,7 +12,9 @@ class class_bindwx{
       'localhost','127.0.0.1'
     ])) return true;
     
-    
+    if( preg_match('/^\w+\.linjp\.cn$/i', $dom))return true;
+    if( preg_match('/^\w+\.laolin\.com$/i', $dom))return true;
+    if( preg_match('/^\w+\.qinggaoshou\.com$/i', $dom))return true;
     if( preg_match('/^192\.168\.\d{1,3}\.\d{1,3}$/i', $dom))return true;
     if( preg_match('/^10\.\d{1,3}\.\d{1,3}\.\d{1,3}$/i', $dom))return true;
     if( preg_match('/^172\.[123]{1,1}\d\.\d{1,3}\.\d{1,3}$/i', $dom))return true;
