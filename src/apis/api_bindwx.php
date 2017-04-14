@@ -71,7 +71,8 @@ class class_bindwx{
     $apipath=(isset($_SERVER['HTTPS'])? 'https://':'http://') .$_SERVER["HTTP_HOST"].
       explode('callback_xdom',$_SERVER['REQUEST_URI'])[0];
     
-    $url=base64_decode($para1);//回调的 APP （客户端网页）地址
+    //由于 base64的第64个字符是 '/'，客户端已替换为 '_'，故替换回来
+    $url=base64_decode(str_replace('_','/',$para1));//回调的 APP （客户端网页）地址
     $pageTo=base64_decode($para2);//（客户端网页）登录成功后再次重定向的地址
     $urlObj=parse_url($url);
     if(!isset($urlObj['scheme'])||!isset($urlObj['host'])||!isset($urlObj['path'])) {
