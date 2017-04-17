@@ -143,7 +143,7 @@ class BINDWX{
     //$ret[]=$user_info;
     unset($user_info['privilege']);//这个一般是空数组格式，不保存
     $uname='wx-'.substr($user_info['openid'],-8);
-    $newUserId = self::user_save($user_info,$uname);
+    $newUserId = self::user_save($appid,$user_info,$uname);
     $tokenid=$app.'~'.$clientId;
     $newToken=USER::__ADMIN_addToken($newUserId,$tokenid);
     $newToken['uname']=$uname;
@@ -151,12 +151,12 @@ class BINDWX{
     return API::data($newToken);
 
   }
-  static public function user_save($user_info,$uname){
+  static public function user_save($appid,$user_info,$uname){
     $prefix=api_g("api-table-prefix");
     $db=API::db();
     
-    $r_old=$db->get($prefix.'user_wx',
-      ['id','uidBinded'],
+    $r_old=$db->select($prefix.'user_wx',
+      ['id','appFrom','uidBinded'],
       ['or'=>[
         'openid'=>$user_info['openid'],
         'unionid'=>$user_info['unionid'] ? $user_info['unionid'] : time()
@@ -164,10 +164,19 @@ class BINDWX{
       ]]
       );
     $uidBinded=0;
+    $appBinded=-1;
     if($r_old) {
       api_g('$r_old',$r_old);
-      $uidBinded=$r_old['uidBinded'];
+      $uidBinded=$r_old[0]['uidBinded'];//默认数据中不会发生绑定到多个UID的情况。
+      for($i=count($r_old);$i--; ) {
+        if($appid==$r_old[$i]['appFrom']) {
+          $appBinded=$i;
+          break;
+        }
+      }
     }
+    
+    //1,  uidBinded=0, 需要到根用户表中创建一个新用户
     if(!$uidBinded) { // not binded to any uid, so create one
       $r_ad=USER::__ADMIN_addUser($uname,//用户名： wx-xxx
         'ab:'.time()//随便指定一个不可登录的密码
@@ -176,23 +185,27 @@ class BINDWX{
         return $r_ad;
       }
       $uidBinded=$r_ad['data'];
-      $user_info['uidBinded']=$uidBinded;
     }
+    $user_info['uidBinded']=$uidBinded;
       
     
-    if($r_old) {
-      $id=$r_old['id'];
+    //2, appBinded >=0 , 已绑定
+    //3, else (appBinded== -1), 未绑定
+    
+    if($appBinded >=0) {//2,已绑定，更新资料
       $r=$db->update($prefix.'user_wx',
         $user_info,
-        ['and'=>['id'=>$r_old['id']],'limit'=>1]);
-    } else {
+        ['and'=>['id'=>$r_old[$appBinded]['id']],'LIMIT'=>1]);
+    } else {//3,未绑定，添加绑定
+      $user_info['appFrom']=$appid;
       $r=$db->insert($prefix.'user_wx',
         $user_info);
       $id=$r;
     }
     api_g('$r_new',$r);
-    
-    return $uidBinded;
+    //$vv=API::data(['uidBinded',$uidBinded,'appBinded',$appBinded,'r_old',$r_old,'r_NEW',$r,$db]);
+    //var_dump($vv);
+    return $uidBinded;//;
 
   }
 }
