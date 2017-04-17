@@ -1,4 +1,7 @@
 <?php
+    
+require_once  dirname( __FILE__ ) . '/class.WX.php';
+
 class class_wx{
   public static function main( $para1,$para2) {
     return API::data( 'API of wx is ready.' );
@@ -17,7 +20,30 @@ class class_wx{
     return API::data( $sign );
   }
 
+  /**
+   *  /wx/get_openids 取得一批uid对应的openid。
+   *  $para1： app(qgs-web或qgs-mp等，与index.config.php对应）
+   *  $para2： uids
+   */
+  public static function get_openids( $para1,$para2 ) {
+    if( ! USER::userVerify() ) {
+      return API::msg(2001,'Error verify token.');
+    }
+    
+    $apps=api_g('WX_APPS');
+    if(!isset($apps[$para1])) {
+      return API::msg(1001,'Error app name');
+    }
+    $appid=$apps[$para1][0];
 
+    if(!$para2) {
+      return API::msg(3002,'No user.');
+    }
+    $uids=explode(',',$para2);
+    
+    $d=WX::getOpenIdByUid($appid, $uids );
+    return API::data($d);
+  }
   /**
    *  /wx/get_users 取得一批用户的信息。
    */
@@ -69,7 +95,7 @@ class class_wx{
     if( ! USER::userVerify() ) {
       return API::msg(2001,'Error verify token.');
     }
-    $tok=self::__accessToken();
+    $tok=WX::GetToken();
     if(API::is_error($tok)) {
       return $tok;
     }
@@ -158,19 +184,6 @@ class class_wx{
     return API::data($jsapiTicket);
   }
   
-  static function __accessToken( ) {
-    //注意
-    //目前依靠从下面文件中的函数 WxToken::xxx() 
-    // 获取全局 access_token
-    if(!file_exists( api_g('path-web') . '/WxToken.inc.php'))
-      return API::msg(601,'Error missing file : WxToken.inc');
-    require_once api_g('path-web') . '/WxToken.inc.php';
-    $tok=WxToken::GetToken();
-    if(!$tok)
-      return API::msg(612,'Error GetToken');
-    return API::data($tok);
-  }
-
   static function __getSign($jsapiTicket,$app) {
     $url=API::GET('url');
     $timestamp = time();
