@@ -44,6 +44,79 @@ class class_wx{
     $d=WX::getOpenIdByUid($appid, $uids );
     return API::data($d);
   }
+  
+  /**
+   *  发消息
+   */
+  public static function send_text() {
+    if( ! USER::userVerify() ) {
+      return API::msg(2001,'Error verify token.');
+    }
+    $text=API::INP('text');
+    if(strlen($text)<2) {
+      return API::msg(601,'text too short');
+    }
+    $msg = ["msgtype"=>"text", 
+      "text"=> [ "content"=>$text]
+    ];
+    return self::__send_msg($msg);
+  }
+  public static function send_news() {
+    if( ! USER::userVerify() ) {
+      return API::msg(2001,'Error verify token.');
+    }
+    $title=API::INP('title');
+    $description=API::INP('description');
+    $newsurl=API::INP('newsurl');
+    $picurl=API::INP('picurl');
+    $err='';
+    if(strlen($title)<2) {
+      $err.='title too short. ';
+    }
+    if(strlen($description)<10) {
+      $err.='description too short. ';
+    }
+    if(strlen($newsurl)<10) {  
+      $err.='newsurl error. ';
+    }
+    if(strlen($picurl)<10) {
+      $err.='picurl error. ';
+    }
+    if($err) {
+      return API::msg(601,$err);
+    }
+
+    $msg =  ["msgtype"=>"news",
+      "news"=>["articles"=>[
+        ["title"=>$title,
+         "description"=>$description,
+         "url"=>$newsurl,
+         "picurl"=>$picurl]
+      ]]
+    ];
+    return self::__send_msg($msg);
+  }
+  
+  public static function __send_msg($msg) {
+  
+    $apps=api_g('WX_APPS');
+    $app=API::INP('app');
+    if( ! api_g('WX_APPS')[$app] )
+      return API::msg(603,"Error app:'$app'");
+    $appid=api_g('WX_APPS')[$app][0];
+    
+    $to_uid=API::INP('to_uid');
+
+    $oids=WX::getOpenIdByUid($appid, [$to_uid] );
+    if(!count($oids)) {
+      return API::msg(701,"Cannot send to uid:$to_uid");
+    }
+    $msg['touser']=$oids[0]['openid'];
+    $r=WX::send_service_message($msg);
+    return $r;
+  }
+  
+  
   /**
    *  /wx/get_users 取得一批用户的信息。
    */

@@ -24,6 +24,142 @@ class WX {
     );
     return $r;
   }
+  
+//======================================================
+	/**
+	 *  S1 客服接口-发消息
+	 */
+   
+   
+/*
+	接口调用请求说明
+
+	http请求方式: POST
+	https://api.weixin.qq.com/cgi-bin/message/custom/send?access_token=ACCESS_TOKEN
+	各消息类型所需的JSON数据包如下：
+
+	发送文本消息
+
+	{
+		"touser":"OPENID",
+		"msgtype":"text",
+		"text":
+		{
+			 "content":"Hello World"
+		}
+	}
+	发送图片消息
+
+	{
+		"touser":"OPENID",
+		"msgtype":"image",
+		"image":
+		{
+		  "media_id":"MEDIA_ID"
+		}
+	}
+	发送语音消息
+
+	{
+		"touser":"OPENID",
+		"msgtype":"voice",
+		"voice":
+		{
+		  "media_id":"MEDIA_ID"
+		}
+	}
+	发送视频消息
+
+	{
+		"touser":"OPENID",
+		"msgtype":"video",
+		"video":
+		{
+		  "media_id":"MEDIA_ID",
+		  "thumb_media_id":"MEDIA_ID",
+		  "title":"TITLE",
+		  "description":"DESCRIPTION"
+		}
+	}
+	发送音乐消息
+
+	{
+		"touser":"OPENID",
+		"msgtype":"music",
+		"music":
+		{
+		  "title":"MUSIC_TITLE",
+		  "description":"MUSIC_DESCRIPTION",
+		  "musicurl":"MUSIC_URL",
+		  "hqmusicurl":"HQ_MUSIC_URL",
+		  "thumb_media_id":"THUMB_MEDIA_ID" 
+		}
+	}
+	发送图文消息 图文消息条数限制在10条以内，注意，如果图文数超过10，则将会无响应。
+
+	{
+		"touser":"OPENID",
+		"msgtype":"news",
+		"news":{
+			"articles": [
+			 {
+				 "title":"Happy Day",
+				 "description":"Is Really A Happy Day",
+				 "url":"URL",
+				 "picurl":"PIC_URL"
+			 },
+			 {
+				 "title":"Happy Day",
+				 "description":"Is Really A Happy Day",
+				 "url":"URL",
+				 "picurl":"PIC_URL"
+			 }
+			 ]
+		}
+	}
+*/
+	
+
+  // 客服接口，文本消息，48小时内无互动会发送失败
+  static function send_service_message_text($openid, $text){
+    $msg = [ "touser"=> $openid , "msgtype"=>"text", 
+      "text"=> [ "content"=>$text]
+    ];
+    $ret = self::send_service_message($msg);
+    return $ret;
+  }
+
+  // 客服接口，图文消息，48小时内无互动会发送失败
+  // TODO: 多条图文
+  static function send_service_message_news($openid, $title, $description, $newsurl, $picurl){
+    
+    $msg =  ["touser"=>$openid,"msgtype"=>"news", "news"=>["articles"=>[
+      ["title"=>$title,
+       "description"=>$description,
+       "url"=>$newsurl,
+       "picurl"=>$picurl]
+    ]]];
+
+    return self::send_service_message($pmsgaram);
+  }
+
+
+  // ============================================================= 
+  static function send_service_message($msgObj){
+    //客服接口，48小时内无互动会发送失败。
+    $url = "https://api.weixin.qq.com/cgi-bin/message/custom/send?access_token=" . self::GetToken();
+    $param = json_encode($msgObj, JSON_UNESCAPED_UNICODE);
+    $ret= G::post($url, $param);
+    $r2 = json_decode($ret, true);
+    //var_dump($dick);
+    if(!isset($r2["errcode"]))
+      return API::msg(2001,'Error');
+    if($r2["errcode"] != "0")
+      return API::msg(2002,"Err:".$r2["errcode"].':'.$r2["errmsg"]);
+    return API::data(1);//发送成功
+  }
+
+
 
 }
 
