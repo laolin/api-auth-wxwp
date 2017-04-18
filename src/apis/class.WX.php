@@ -151,7 +151,6 @@ class WX {
     $param = json_encode($msgObj, JSON_UNESCAPED_UNICODE);
     $ret= G::post($url, $param);
     $r2 = json_decode($ret, true);
-    //var_dump($dick);
     if(!isset($r2["errcode"]))
       return API::msg(2001,'Error');
     if($r2["errcode"] != "0")
@@ -160,6 +159,56 @@ class WX {
   }
 
 
+  /*
+  {
+     "touser":"OPENID",
+     "template_id":"ngqIpbwh8bUfcSsECmogfXcV14J0tQlEpBO27izEYtY",
+     "url":"http://weixin.qq.com/download",  
+     "miniprogram":{
+       "appid":"xiaochengxuappid12345",
+       "pagepath":"index?foo=bar"
+     },          
+     "data":{
+             "first": {
+                 "value":"恭喜你购买成功！",
+                 "color":"#173177"
+             },
+             "keynote1":{
+                 "value":"巧克力",
+                 "color":"#173177"
+             },
+             "keynote2": {
+                 "value":"39.8元",
+                 "color":"#173177"
+             },
+             "keynote3": {
+                 "value":"2014年9月22日",
+                 "color":"#173177"
+             },
+             "remark":{
+                 "value":"欢迎再次购买！",
+                 "color":"#173177"
+             }
+     }
+  }
+  
+  */
+  
+	/**
+	 *  S2 模板消息
+	 */
+   
+  static function send_tpl_message($D) {
+    $url = "https://api.weixin.qq.com/cgi-bin/message/template/send?access_token=" . self::GetToken();
+    
+    $json= urldecode(json_encode($D,JSON_UNESCAPED_UNICODE));
+    $ret = G::post($url,$json );
+    $r2 = json_decode($ret, true);
+    if(!isset($r2["errcode"]))
+      return API::msg(2001,'Error');
+    if($r2["errcode"] != "0")
+      return API::msg(2002,"Err:".$r2["errcode"].':'.$r2["errmsg"]);
+    return API::data(1);//发送成功
 
+  }   
 }
-

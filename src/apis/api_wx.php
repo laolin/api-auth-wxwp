@@ -48,6 +48,25 @@ class class_wx{
   /**
    *  发消息
    */
+   
+  /* //发模板消息
+  public static function send_tpl_message() {
+    $D=[];
+    $D["touser"] = 'od6xzvxb4M6WVdRYjLO4b9k1nHXo';
+    $D["template_id"]="9mF0FgjQFthbum8XhGKImsi1OZArkx5dr9hgzjDATHc";
+		$D["url"] = 'https://linjp.cn';
+    $D["data"]=[
+      'first'=>['value'=>'打赏成功啦','color'=>'#22ff99'],
+      'keyword1'=>['value'=>'rrr给的人','color'=>'#22ff09'],
+      'keyword2'=>['value'=>'jjj金额','color'=>'#007788'],
+      'keyword3'=>['value'=>'时间ssj','color'=>'#ff9999'],
+      'remark'=>['value'=>'感谢有钱人','color'=>'#ff9992']
+    ];
+
+    return WX::send_tpl_message($D);
+  }
+  */
+  
   public static function send_text() {
     if( ! USER::userVerify() ) {
       return API::msg(2001,'Error verify token.');
